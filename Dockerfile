@@ -1,18 +1,19 @@
-FROM ubuntu:latest
-RUN apt-get update && apt-get install -y \
-    python3.12 \
-    python3-pip \
-    git
+FROM python:3.12-slim
 
-RUN pip3 install PyYAML
+# Optional: install git if you need it at runtime
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY feed.py /usr/bin/feed.py
+# Install Python deps
+RUN pip install --no-cache-dir pyyaml
 
-# Copy entrypoint script
+# App files
+WORKDIR /app
+COPY feed.py /usr/local/bin/feed
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Ensure executable permission
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Make scripts executable
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/feed
 
-# Set as entrypoint
+# Entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
